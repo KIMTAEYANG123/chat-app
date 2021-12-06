@@ -18,38 +18,39 @@ import java.util.*;
 public class ChatService {
 
     private final ObjectMapper objectMapper;
-    private Map<String, ChatRoom> chatRooms;
+    private Map<String, ChatRoom> chatRoomMap;
 
     @PostConstruct
     private void init() {
-        chatRooms = new LinkedHashMap<>();
+        chatRoomMap = new LinkedHashMap<>();
     }
 
     public List<ChatRoom> findAllRoom() {
 //        map안에 있는 value값을 어레이리스트로 초기화
-        return new ArrayList<>(chatRooms.values());
+        List chatRooms = new ArrayList<>(chatRoomMap.values());
+        Collections.reverse(chatRooms);
+        return chatRooms;
     }
 
     public ChatRoom findRoomById(String roomId) {
-        return chatRooms.get(roomId);
+        return chatRoomMap.get(roomId);
     }
 
 
-    public ChatRoom createRoom(String name) {
-        String randomId = UUID.randomUUID().toString();
-        ChatRoom chatRoom = ChatRoom.builder()
-                .roomId(randomId)
-                .name(name)
-                .build();
-        chatRooms.put(randomId, chatRoom);
-        return chatRoom;
+    public boolean createRoom(String name) {
+        ChatRoom chatRoom = ChatRoom.create(name);
+        chatRoomMap.put(chatRoom.getRoomId(),chatRoom);
+
+        return true;
     }
 
-    public <T> void sendMessage(WebSocketSession session, T message) {
-        try {
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        }
-    }
+    
+    //websocket사용할 떄 쓰는 거
+//    public <T> void sendMessage(WebSocketSession session, T message) {
+//        try {
+//            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+//        } catch (IOException e) {
+//            log.error(e.getMessage(), e);
+//        }
+//    }
 }

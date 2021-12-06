@@ -8,7 +8,9 @@
         <link href="${path}/resources/css/index.css" rel="stylesheet"/>
     </head>
     <body>
-        <div><h3>채팅방</h3></div>
+        <% String roomId= "${chatRoom.roomId}"; %>
+
+        <div><h3>${chatRoom.name}</h3></div>
         <div>
             <div>
                 <input type="text" class="name" aria-label="Recipient's username" />
@@ -23,12 +25,18 @@
             </div>
 
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
         <script>
+
             const name = document.querySelector(".name")
             const enter = document.querySelector(".enter")
             const talk = document.querySelector(".talk")
+            const id = "${chatRoom.roomId}";
+            console.log(id);
             let userName;
             let websocket;
+            let stomp;
 
             enter.addEventListener('click',()=>{
                 const hidden = document.querySelector(".hidden")
@@ -37,76 +45,42 @@
                 div.classList.add("hidden");
                 userName = name.value;
 
-                websocket = new WebSocket("ws://localhost:8080/ws/chat");
-                websocket.onmessage = onMessage;
-                websocket.onopen = onOpen;
-                websocket.onclose = onClose;
-            })
 
-            talk.addEventListener('click',()=>{
-                send();
-            })
+              const sock = new SockJS("/ws-stomp");
+              stomp = Stomp.over(sock);
 
-            function send(){
-                let msg = document.querySelector(".msg");
-                console.log(userName+ ":" + msg.value);
-                websocket.send(userName + ":" + msg.value);
+              stomp.connect({}, function(frame) {
+                console.log("STOMP Connection")
+
+               //4. subscribe(path, callback)으로 메세지를 받을 수 있음
+               stomp.subscribe("/sub/chat/room/" + id, function (chat) {
+                   const content = JSON.parse(chat.body);
+                   console.log(content);
+                   const writer = content.sender;
+                   const message = content.message
+                   if(writer == userName){
+                       const userMsg = document.createElement("div");
+                       userMsg.innerHTML = `<b>\${writer} : \${message}</b>`
+                       const msgArea = document.querySelector('.msg-area');
+                       msgArea.appendChild(userMsg);
+                   }
+                   else{
+                       const userMsg = document.createElement("div");
+                       userMsg.innerHTML = `\${writer} : \${message}`
+                       const msgArea = document.querySelector('.msg-area');
+                       msgArea.appendChild(userMsg);
+                   }
+               });
+                   //3. send(path, header, message)로 메세지를 보낼 수 있음
+                   stomp.send('/pub/chat/message', {}, JSON.stringify({type: 'ENTER', roomId: id, sender: userName}))
+             });
+            });
+
+            talk.addEventListener('click' , ()=>{
+                const msg = document.querySelector(".msg");
+                stomp.send("/pub/chat/message", {}, JSON.stringify({type: 'TALK', roomId: id, sender: userName, message: msg.value}));
                 msg.value = '';
-            }
-
-            //채팅창에서 나갔을 때
-            function onClose(evt) {
-                const str = userName + ": 님이 방을 나가셨습니다.";
-                websocket.send(str);
-            }
-
-            //채팅창에 들어왔을 때
-            function onOpen(evt) {
-                const str = userName + ": 님이 입장하셨습니다.";
-                websocket.send(str);
-            }
-
-            function onMessage(msg) {
-                const data = msg.data;
-                let sessionId = null;
-
-                //데이터를 보낸 사람
-                let message = null;
-                let arr = data.split(":");
-
-                for(var i=0; i<arr.length; i++){
-                    console.log('arr[' + i + ']: ' + arr[i]);
-                }
-
-                let cur_session = userName;
-
-                //현재 세션에 로그인 한 사람
-                console.log("cur_session : " + cur_session);
-                sessionId = arr[0];
-                message = arr[1];
-
-                console.log("sessionID : " + sessionId);
-                console.log("cur_session : " + cur_session);
-
-                //로그인 한 클라이언트와 타 클라이언트를 분류하기 위함
-                if(sessionId == cur_session){
-                    const userMsg = document.createElement("div");
-                    userMsg.innerHTML = `<b>\${sessionId} : \${message}</b>`
-                    const msgArea = document.querySelector('.msg-area');
-                    msgArea.appendChild(userMsg);
-                }
-                else{
-                    const userMsg = document.createElement("div");
-                    userMsg.innerHTML = `\${sessionId} : \${message}`
-                    const msgArea = document.querySelector('.msg-area');
-                    msgArea.appendChild(userMsg);
-                }
-            }
-
-
-
-
-
+            });
         </script>
     </body>
 </html>
