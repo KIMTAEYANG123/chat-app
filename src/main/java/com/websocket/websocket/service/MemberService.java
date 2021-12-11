@@ -18,6 +18,7 @@ public class MemberService {
         memberRepository.save(member);
     }
     public Member findById(String id){
+        System.out.println(id);
         return memberRepository.findById(id).orElseThrow(()->new RuntimeException("회원이 없습니다."));
     }
 
@@ -27,5 +28,12 @@ public class MemberService {
 
     public List<MemberMappingName> findNameMappingByName(String name){
         return memberRepository.findNameMappingByName(name);
+    }
+
+    public boolean existsByName(String name){
+        return memberRepository.existsByName(name);
+    }
+    public int countByName(String name){
+        return memberRepository.countByName(name);
     }
 }
