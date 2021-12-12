@@ -19,26 +19,30 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping("/save")
-    @ResponseBody
-    public Member save(){
-        Member member = new Member();
-        member.setId("qwer123");
+    @GetMapping("/login")
+    public String login(Member member, Model model){
+        model.addAttribute("member", member);
+        return "/login";
+    }
+
+    @PostMapping("/save")
+    public String save(final Member member){
         member.setType(MemberType.N);
-        member.setPassword("1234");
-        member.setName("안녕");
         member.setState(true);
         member.setJoinDate(Calendar.getInstance().getTime());
         member.setUpdateDate(Calendar.getInstance().getTime());
         memberService.save(member);
-        return member;
+        return "redirect:/user/login";
     }
 
     @GetMapping("/findById/{memberId}")
     @ResponseBody
-    public Member findById(@PathVariable String memberId, Model model){
+    public boolean findById(@PathVariable String memberId){
         Member member = memberService.findById(memberId);
-        return member;
+        if(member == null){
+            return true;
+        }
+        return false;
     }
 
     @GetMapping("/findByName/{name}")
@@ -58,6 +62,16 @@ public class MemberController {
     @ResponseBody
     public boolean existByName(@PathVariable String name){
         return memberService.existsByName(name);
+    }
+
+    @GetMapping("/existById/{id}")
+    @ResponseBody
+    public boolean existById(@PathVariable String id){
+        boolean exist = memberService.existsById(id);
+        if(exist){
+            return true;
+        }
+        return false;
     }
 
     @GetMapping("/countByName/{name}")

@@ -33,6 +33,10 @@ public class MemberService {
     public boolean existsByName(String name){
         return memberRepository.existsByName(name);
     }
+
+    public boolean existsById(String id){
+        return memberRepository.existsById(id);
+    }
     public int countByName(String name){
         return memberRepository.countByName(name);
     }
