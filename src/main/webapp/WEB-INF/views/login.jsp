@@ -32,7 +32,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-outline-primary">가입하기</button>
+                        <button type="submit" class="btn btn-outline-primary" id="insert" disabled >가입하기</button>
                     </div>
 
 
@@ -40,6 +40,8 @@
         </div>
         <script>
             const id = document.querySelector("#staticId");
+            const password = document.querySelector("#inputPassword");
+            const name = document.querySelector("#inputName");
             id.addEventListener("blur", function( event ) {
               $.ajax({
               		url:'/user/existById/'+id.value+'/',
@@ -48,21 +50,86 @@
               		dataType:'json',
               		success:function(data){
               			if(data){
-              			    const exist = id.parentNode
-                            const p = document.createElement('p');
-                            p.innerHTML = '이미 존재합니다.';
-                            exist.appendChild(p);
+              			    const next = id.nextSibling
+              			    console.log(next);
+              			    if(next === null){
+              			        const p = document.createElement('p');
+              			        const exist = id.parentNode
+                                p.innerText = '이미 존재하는 아이디 입니다.';
+                                exist.appendChild(p);
+              			    }else{
+              			        const p = document.querySelector('p');
+
+              			        p.innerText = '이미 존재하는 아이디 입니다.'
+              			    }
               			}else{
-              			    const exist = id.parentNode
-                            const p = document.createElement('p');
-                            p.innerHTML = '사용 가능한 아이디입니다.';
-                            exist.appendChild(p);
+              			    if(document.querySelector('p')){
+              			       const p = document.querySelector('p');
+                                p.innerText = '사용 가능한 아이디입니다.';
+              			    }else{
+              			        const p = document.createElement('p');
+                                const exist = id.parentNode
+                                p.innerText = '사용 가능한 아이디입니다.';
+                                exist.appendChild(p);
+              			    }
+
               			}
               		},error:function(a,b,c){
               			console.log(a,b,c);
               		}
               	});
             });
+            const check = {
+                id:false,
+                password:false,
+                name : false,
+            }
+            id.addEventListener("change", function( event ) {
+                const regType = /^[A-Za-z0-9]{4,12}$/;
+
+                if(regType.test(id.value)){
+                    check.id = true;
+                }else{
+                    check.id = false;
+                    alert("아이디 조건이 맞지 않습니다.");
+                }
+                regCheck();
+            });
+
+            password.addEventListener("change", function( event ) {
+                const regType = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+                if(regType.test(password.value)){
+                    check.password = true;
+                }else{
+                    check.password = false;
+                    alert("비밀번호 조건이 맞지 않습니다.");
+                }
+                regCheck();
+            });
+
+            name.addEventListener("change", function( event ) {
+                const regType = /^[가-힣]{2,4}$/;
+
+                if(regType.test(name.value)){
+                    check.name = true;
+                }else{
+                    check.name = false;
+                    alert("이름의 조건이 맞지 않습니다.");
+                }
+                regCheck();
+            });
+
+            const regCheck = ()=>{
+                const button = document.querySelector("#insert");
+                console.log(button);
+                console.log(check.id , check.password , check.name);
+                if(check.id && check.password && check.name){
+                    button.disabled = false;
+                }else{
+                    button.disabled = true;
+                }
+            }
         </script>
     </body>
 </html>
