@@ -19,10 +19,10 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping("/login")
-    public String login(Member member, Model model){
+    @GetMapping("/join")
+    public String join(Member member, Model model){
         model.addAttribute("member", member);
-        return "/login";
+        return "/userJoin";
     }
 
     @PostMapping("/save")
@@ -32,7 +32,7 @@ public class MemberController {
         member.setJoinDate(Calendar.getInstance().getTime());
         member.setUpdateDate(Calendar.getInstance().getTime());
         memberService.save(member);
-        return "redirect:/user/login";
+        return "redirect:/user/join";
     }
 
     @GetMapping("/findById/{memberId}")

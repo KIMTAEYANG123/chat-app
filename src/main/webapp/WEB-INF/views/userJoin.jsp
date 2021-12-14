@@ -11,8 +11,11 @@
 
     </head>
     <body>
-        <div class="container mt-4">
-              <form action="/user/save" method="post">
+        <div class="container mt-4 ">
+                <div class="text-center">
+                  <img src="${path}/resources/image/img.png" width="200px" height="200px" class="rounded" alt="...">
+                </div>
+              <form class="mt-4" action="/user/save" method="post">
                     <div class="mb-3 row">
                         <label for="staticId" class="col-sm-2 col-form-label">Id</label>
                         <div class="col-sm-10" >
