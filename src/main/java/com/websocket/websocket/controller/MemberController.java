@@ -5,16 +5,19 @@ import com.websocket.websocket.repository.Member;
 import com.websocket.websocket.repository.MemberMappingName;
 import com.websocket.websocket.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/user")
 @RequiredArgsConstructor
+@Log4j2
 public class MemberController {
 
     private final MemberService memberService;
@@ -35,15 +38,35 @@ public class MemberController {
         return "redirect:/user/join";
     }
 
-    @GetMapping("/findById/{memberId}")
-    @ResponseBody
-    public boolean findById(@PathVariable String memberId){
-        Member member = memberService.findById(memberId);
-        if(member == null){
-            return true;
-        }
-        return false;
+    @GetMapping("/main")
+    public String main(){
+        return "/login";
     }
+
+    @PostMapping("/login")
+    public String main(final String id , final String password , Model model){
+        Optional<Member> member = memberService.findById(id);
+        log.info("이거다 {}",member);
+        if(member == null){
+            return "redirect:/user/main";
+        }
+        if(member.get().getPassword().equals(password)) {
+            return "redirect:/list";
+        }else{
+            return "redirect:/user/main";
+        }
+
+    }
+
+//    @GetMapping("/findById/{memberId}")
+//    @ResponseBody
+//    public boolean findById(@PathVariable String memberId){
+//        Optional<Member> member = memberService.findById(memberId);
+//        if(member == null){
+//            return true;
+//        }
+//        return false;
+//    }
 
     @GetMapping("/findByName/{name}")
     public String findByName(@PathVariable String name, Model model){
